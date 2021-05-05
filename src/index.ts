@@ -1,25 +1,21 @@
-import { MongoClient } from 'mongodb';
-import { getRepository } from './base';
+import { connect, disconnect, getConnection, getRepository } from './database';
 
 class Book {
   title!: string;
   pages!: number;
 }
 
-const client = new MongoClient('mongodb://localhost:27017', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+const client = getConnection();
 
 const run = async () => {
   try {
-    await client.connect();
+    await connect();
     const repo = getRepository<Book>(client, 'library', 'Books');
 
     const result = await repo.create({ title: 'Diary', pages: 20 });
     console.log(result);
   } finally {
-    await client.close();
+    await disconnect();
   }
 };
 

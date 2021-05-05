@@ -6,7 +6,8 @@
   "author": "Guilherme Beidaki Peres <guibperes@protonmail.com>",
   "scripts": {
     "start": "node dist/index.js",
-    "dev": "tsnd --transpile-only --respawn --ignore-watch node_modules src/index.ts"
+    "dev": "tsnd --transpile-only --respawn --ignore-watch node_modules src/index.ts",
+    "build": "rimraf dist && tsc"
   },
   "dependencies": {
     "fp-ts": "^2.10.5",
