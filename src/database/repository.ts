@@ -64,7 +64,7 @@ const deleteById = (
     _id: ObjectId.createFromHexString(id),
   });
 
-  return !!result.value;
+  return Boolean(result.value);
 };
 
 export const getRepository = <E>(

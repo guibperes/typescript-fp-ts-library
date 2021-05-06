@@ -12,7 +12,7 @@ const run = async () => {
     await connect();
     const repo = getRepository<Book>(client, 'library', 'Books');
 
-    const result = await repo.deleteById('60929a1691533747533222bb');
+    const result = await repo.deleteById('60929a2bc2374a96f333fa0a');
     console.log(result);
 
     // const result = await repo.create({ title: 'Diary', pages: 20 });
