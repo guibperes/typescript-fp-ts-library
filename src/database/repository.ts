@@ -8,6 +8,7 @@ export interface Repository<E> {
   create: (entity: E) => Promise<Id>;
   updateById: (id: string, entity: E) => Promise<E>;
   deleteById: (id: string) => Promise<boolean>;
+  findById: (id: string) => Promise<E>;
 }
 
 const getCollection = (
@@ -67,6 +68,20 @@ const deleteById = (
   return Boolean(result.value);
 };
 
+const findById = (
+  client: MongoClient,
+  database: string,
+  entityName: string,
+) => async <E>(id: string): Promise<E> => {
+  const collection = getCollection(client, database, entityName);
+
+  const result = await collection.findOne({
+    _id: ObjectId.createFromHexString(id),
+  });
+
+  return result;
+};
+
 export const getRepository = <E>(
   client: MongoClient,
   database: string,
@@ -75,4 +90,5 @@ export const getRepository = <E>(
   create: create(client, database, entityName),
   updateById: updateById(client, database, entityName),
   deleteById: deleteById(client, database, entityName),
+  findById: findById(client, database, entityName),
 });
