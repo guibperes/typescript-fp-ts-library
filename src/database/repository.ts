@@ -79,7 +79,7 @@ const findById = (
     _id: ObjectId.createFromHexString(id),
   });
 
-  return result;
+  return resolveId(result);
 };
 
 export const getRepository = <E>(
