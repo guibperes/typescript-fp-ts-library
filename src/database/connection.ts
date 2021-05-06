@@ -1,4 +1,5 @@
 import { MongoClient } from 'mongodb';
+import { logger } from '../libs';
 
 const client = new MongoClient('mongodb://localhost:27017', {
   useNewUrlParser: true,
@@ -10,10 +11,10 @@ export const getConnection = () => client;
 export const connect = async () => {
   try {
     await client.connect();
-    console.log('Database connected');
+    logger.info('Database connected');
   } catch (error) {
-    console.log('Cannot connect on database');
-    console.error(error);
+    logger.error('Cannot connect on database');
+    logger.error(error);
 
     process.exit(1);
   }
@@ -22,10 +23,10 @@ export const connect = async () => {
 export const disconnect = async () => {
   try {
     await client.close();
-    console.log('Database disconnected');
+    logger.info('Database disconnected');
   } catch (error) {
-    console.log('Cannot disconnect on database');
-    console.error(error);
+    logger.error('Cannot disconnect on database');
+    logger.error(error);
 
     process.exit(1);
   }
