@@ -1,4 +1,4 @@
-import { MongoClient, ObjectId } from 'mongodb';
+import { MongoClient, ObjectId, Collection } from 'mongodb';
 
 export type Id = {
   id: string;
@@ -9,13 +9,15 @@ export interface Repository<E> {
   updateById: (id: string, entity: E) => Promise<E>;
   deleteById: (id: string) => Promise<boolean>;
   findById: (id: string) => Promise<E>;
+  getCollection: () => Collection<E>;
 }
 
-const getCollection = (
+const getCollection = <E>(
   client: MongoClient,
   database: string,
   entityName: string,
-) => client.db(database.toLowerCase()).collection(entityName.toLowerCase());
+): Collection<E> =>
+  client.db(database.toLowerCase()).collection(entityName.toLowerCase());
 
 const resolveId = <E>(entity: E): E =>
   Object.keys(entity)
@@ -36,7 +38,7 @@ const create = (
   const collection = getCollection(client, database, entityName);
 
   const result = await collection.insertOne(entity);
-  return { id: result.insertedId };
+  return { id: result.insertedId.toHexString() };
 };
 
 const updateById = (
@@ -51,7 +53,7 @@ const updateById = (
     { $set: entity },
     { returnOriginal: false },
   );
-  return resolveId(result.value);
+  return resolveId(result.value as E);
 };
 
 const deleteById = (
@@ -79,7 +81,7 @@ const findById = (
     _id: ObjectId.createFromHexString(id),
   });
 
-  return resolveId(result);
+  return resolveId(result as E);
 };
 
 export const getRepository = <E>(
@@ -91,4 +93,5 @@ export const getRepository = <E>(
   updateById: updateById(client, database, entityName),
   deleteById: deleteById(client, database, entityName),
   findById: findById(client, database, entityName),
+  getCollection: () => getCollection(client, database, entityName),
 });
