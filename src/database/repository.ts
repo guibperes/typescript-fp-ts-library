@@ -1,4 +1,4 @@
-import { MongoClient } from 'mongodb';
+import { MongoClient, ObjectId } from 'mongodb';
 
 export type Id = {
   id: string;
@@ -7,6 +7,7 @@ export type Id = {
 export interface Repository<E> {
   create: (entity: E) => Promise<Id>;
   updateById: (id: string, entity: E) => Promise<E>;
+  deleteById: (id: string) => Promise<boolean>;
 }
 
 const getCollection = (
@@ -52,6 +53,20 @@ const updateById = (
   return resolveId(result.value);
 };
 
+const deleteById = (
+  client: MongoClient,
+  database: string,
+  entityName: string,
+) => async (id: string): Promise<boolean> => {
+  const collection = getCollection(client, database, entityName);
+
+  const result = await collection.findOneAndDelete({
+    _id: ObjectId.createFromHexString(id),
+  });
+
+  return !!result.value;
+};
+
 export const getRepository = <E>(
   client: MongoClient,
   database: string,
@@ -59,4 +74,5 @@ export const getRepository = <E>(
 ): Repository<E> => ({
   create: create(client, database, entityName),
   updateById: updateById(client, database, entityName),
+  deleteById: deleteById(client, database, entityName),
 });

@@ -12,14 +12,17 @@ const run = async () => {
     await connect();
     const repo = getRepository<Book>(client, 'library', 'Books');
 
-    const result = await repo.create({ title: 'Diary', pages: 20 });
+    const result = await repo.deleteById('60929a1691533747533222bb');
     console.log(result);
 
-    const update = await repo.updateById(result.id, {
-      title: 'Diary',
-      pages: 30,
-    });
-    console.log(update);
+    // const result = await repo.create({ title: 'Diary', pages: 20 });
+    // console.log(result);
+
+    // const update = await repo.updateById(result.id, {
+    //   title: 'Diary',
+    //   pages: 30,
+    // });
+    // console.log(update);
   } finally {
     await disconnect();
   }
