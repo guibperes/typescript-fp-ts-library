@@ -1,9 +1,5 @@
 import { getConnection, getRepository } from '@/database';
-
-type Book = {
-  title: string;
-  pages: number;
-};
+import { Book } from './entity';
 
 export const bookRepository = getRepository<Book>(
   getConnection(),
