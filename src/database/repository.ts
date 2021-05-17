@@ -20,15 +20,11 @@ const getCollection = <E>(
   client.db(database.toLowerCase()).collection(entityName.toLowerCase());
 
 const resolveId = <E>(entity: E): E =>
-  Object.keys(entity)
-    .map(key => (key === '_id' ? 'id' : key))
-    .reduce(
-      (acc, value) => ({
-        ...acc,
-        [value]: value === 'id' ? entity['_id'] : entity[value],
-      }),
-      {} as E,
-    );
+  Object.fromEntries(
+    Object.entries(entity).map(([key, value]) =>
+      key === '_id' ? ['id', value] : [key, value],
+    ),
+  ) as E;
 
 const create = (
   client: MongoClient,

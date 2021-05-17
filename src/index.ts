@@ -8,6 +8,7 @@ const run = async () => {
 
     const result = await bookRepository.findById('60929aa5afae2741b29d87e9');
     console.log(result);
+    console.log(Object.fromEntries(Object.entries(result)));
   } finally {
     await disconnect();
   }
