@@ -1,7 +1,13 @@
+import { pipe } from 'fp-ts/function';
+import { Either, fromOption } from 'fp-ts/Either';
 import { Id, Repository } from '@/database';
 
+export type ServiceError = {
+  error: string;
+};
+
 export interface Service<E> {
-  create: (entity: E) => Promise<Id>;
+  create: (entity: E) => Promise<Either<ServiceError, Id>>;
   updateById: (id: string, entity: E) => Promise<E>;
   deleteById: (id: string) => Promise<boolean>;
   findById: (id: string) => Promise<E>;
@@ -9,7 +15,11 @@ export interface Service<E> {
 
 const create = <E>(repository: Repository<E>) => async (
   entity: E,
-): Promise<Id> => repository.create(entity);
+): Promise<Either<ServiceError, Id>> =>
+  pipe(
+    await repository.create(entity),
+    fromOption(() => ({ error: 'Cannot insert entity on database' })),
+  );
 
 const updateById = <E>(repository: Repository<E>) => async (
   id: string,
