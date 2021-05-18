@@ -1,4 +1,5 @@
 import { MongoClient, ObjectId, Collection } from 'mongodb';
+import { pipe } from 'fp-ts/function';
 
 export type Id = {
   id: string;
@@ -19,12 +20,11 @@ const getCollection = <E>(
 ): Collection<E> =>
   client.db(database.toLowerCase()).collection(entityName.toLowerCase());
 
+const objectEntriesMap = <E>(array: [string, E][]) =>
+  array.map(([key, value]) => (key === '_id' ? ['id', value] : [key, value]));
+
 const resolveId = <E>(entity: E): E =>
-  Object.fromEntries(
-    Object.entries(entity).map(([key, value]) =>
-      key === '_id' ? ['id', value] : [key, value],
-    ),
-  ) as E;
+  pipe(entity, Object.entries, objectEntriesMap, Object.fromEntries);
 
 const create = (
   client: MongoClient,
