@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "fp-ts": "^2.10.5",
+    "io-ts": "^2.2.16",
     "module-alias": "^2.2.2",
     "mongodb": "^3.6.6",
     "pino": "^6.11.3"

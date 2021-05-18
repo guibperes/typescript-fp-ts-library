@@ -21,7 +21,7 @@ const getCollection = <E>(
 ): Collection<E> =>
   client.db(database.toLowerCase()).collection<E>(entityName.toLowerCase());
 
-const objectEntriesMap = <E>(array: [string, E][]) =>
+const objectEntriesMap = (array: [string, any][]) =>
   array.map(([key, value]) => (key === '_id' ? ['id', value] : [key, value]));
 
 const resolveId = <E>(entity: E): E =>
