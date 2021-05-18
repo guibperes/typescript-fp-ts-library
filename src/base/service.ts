@@ -9,7 +9,7 @@ export type ServiceError = {
 export interface Service<E> {
   create: (entity: E) => Promise<Either<ServiceError, Id>>;
   updateById: (id: string, entity: E) => Promise<Either<ServiceError, E>>;
-  deleteById: (id: string) => Promise<boolean>;
+  deleteById: (id: string) => Promise<Either<ServiceError, boolean>>;
   findById: (id: string) => Promise<E>;
 }
 
@@ -30,8 +30,13 @@ const updateById = <E>(repository: Repository<E>) => async (
     fromOption(() => ({ error: 'Cannot update entity with provided id' })),
   );
 
-const deleteById = <E>(repository: Repository<E>) => async (id: string) =>
-  repository.deleteById(id);
+const deleteById = <E>(repository: Repository<E>) => async (
+  id: string,
+): Promise<Either<ServiceError, boolean>> =>
+  pipe(
+    await repository.deleteById(id),
+    fromOption(() => ({ error: 'Cannot delete entity with provided id' })),
+  );
 
 const findById = <E>(repository: Repository<E>) => async (id: string) =>
   repository.findById(id);
