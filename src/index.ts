@@ -11,10 +11,8 @@ const run = async () => {
     await connect();
 
     pipe(
-      await bookService.updateById('60929aa5afae2741b29d87e9', {
-        title: 'My Diary',
-        pages: 100,
-      }),
+      await bookRepository.deleteById('60929aba7831de961a96cabb'),
+      fromOption(() => ({ error: 'Deu ruim' })),
       fold(
         error => console.log(error),
         result => console.log(result),

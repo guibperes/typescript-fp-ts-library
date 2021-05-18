@@ -9,7 +9,7 @@ export type Id = {
 export interface Repository<E> {
   create: (entity: E) => Promise<Option<Id>>;
   updateById: (id: string, entity: E) => Promise<Option<E>>;
-  deleteById: (id: string) => Promise<boolean>;
+  deleteById: (id: string) => Promise<Option<boolean>>;
   findById: (id: string) => Promise<E>;
   getCollection: () => Collection<E>;
 }
@@ -59,14 +59,13 @@ const deleteById = (
   client: MongoClient,
   database: string,
   entityName: string,
-) => async (id: string): Promise<boolean> => {
+) => async (id: string): Promise<Option<boolean>> => {
   const collection = getCollection(client, database, entityName);
 
   const result = await collection.findOneAndDelete({
     _id: ObjectId.createFromHexString(id),
   });
-
-  return Boolean(result.value);
+  return result.value ? some(Boolean(result.value)) : none;
 };
 
 const findById = (
