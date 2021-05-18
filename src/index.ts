@@ -11,8 +11,8 @@ const run = async () => {
     await connect();
 
     pipe(
-      await bookService.deleteById('60929c41b61f9fc3f6b2b918'),
-      // fromOption(() => ({ error: 'Deu ruim' })),
+      await bookRepository.findById('60929c547f9f710db4ff3d5f'),
+      fromOption(() => ({ error: 'Deu ruim' })),
       fold(
         error => console.log(error),
         result => console.log(result),

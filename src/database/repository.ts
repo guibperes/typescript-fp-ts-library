@@ -10,7 +10,7 @@ export interface Repository<E> {
   create: (entity: E) => Promise<Option<Id>>;
   updateById: (id: string, entity: E) => Promise<Option<E>>;
   deleteById: (id: string) => Promise<Option<boolean>>;
-  findById: (id: string) => Promise<E>;
+  findById: (id: string) => Promise<Option<E>>;
   getCollection: () => Collection<E>;
 }
 
@@ -72,14 +72,13 @@ const findById = (
   client: MongoClient,
   database: string,
   entityName: string,
-) => async <E>(id: string): Promise<E> => {
+) => async <E>(id: string): Promise<Option<E>> => {
   const collection = getCollection(client, database, entityName);
 
   const result = await collection.findOne({
     _id: ObjectId.createFromHexString(id),
   });
-
-  return resolveId(result as E);
+  return result ? some(resolveId(result as E)) : none;
 };
 
 export const getRepository = <E>(
