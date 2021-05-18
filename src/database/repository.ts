@@ -1,12 +1,13 @@
 import { MongoClient, ObjectId, Collection } from 'mongodb';
 import { pipe } from 'fp-ts/function';
+import { Option, none, some } from 'fp-ts/Option';
 
 export type Id = {
   id: string;
 };
 
 export interface Repository<E> {
-  create: (entity: E) => Promise<Id>;
+  create: (entity: E) => Promise<Option<Id>>;
   updateById: (id: string, entity: E) => Promise<E>;
   deleteById: (id: string) => Promise<boolean>;
   findById: (id: string) => Promise<E>;
@@ -18,7 +19,7 @@ const getCollection = <E>(
   database: string,
   entityName: string,
 ): Collection<E> =>
-  client.db(database.toLowerCase()).collection(entityName.toLowerCase());
+  client.db(database.toLowerCase()).collection<E>(entityName.toLowerCase());
 
 const objectEntriesMap = <E>(array: [string, E][]) =>
   array.map(([key, value]) => (key === '_id' ? ['id', value] : [key, value]));
@@ -30,11 +31,12 @@ const create = (
   client: MongoClient,
   database: string,
   entityName: string,
-) => async <E>(entity: E): Promise<Id> => {
+) => async <E>(entity: E): Promise<Option<Id>> => {
   const collection = getCollection(client, database, entityName);
 
-  const result = await collection.insertOne(entity);
-  return { id: result.insertedId.toHexString() };
+  return pipe(await collection.insertOne(entity), result =>
+    result.insertedId ? some({ id: result.insertedId.toHexString() }) : none,
+  );
 };
 
 const updateById = (
