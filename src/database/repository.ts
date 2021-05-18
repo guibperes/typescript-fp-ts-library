@@ -34,9 +34,10 @@ const create = (
 ) => async <E>(entity: E): Promise<Option<Id>> => {
   const collection = getCollection(client, database, entityName);
 
-  return pipe(await collection.insertOne(entity), result =>
-    result.insertedId ? some({ id: result.insertedId.toHexString() }) : none,
-  );
+  const result = await collection.insertOne(entity);
+  return result.insertedId
+    ? some({ id: result.insertedId.toHexString() })
+    : none;
 };
 
 const updateById = (
