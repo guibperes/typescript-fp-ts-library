@@ -1,9 +1,8 @@
 import { pipe } from 'fp-ts/function';
-import { fold, fromOption } from 'fp-ts/Either';
+import { fold } from 'fp-ts/Either';
 
 import './config/alias';
 import { connect, disconnect } from './database';
-import { bookRepository } from './modules/book/repository';
 import { bookService } from './modules/book/service';
 
 const run = async () => {
@@ -11,8 +10,7 @@ const run = async () => {
     await connect();
 
     pipe(
-      await bookRepository.findById('60929c547f9f710db4ff3d5f'),
-      fromOption(() => ({ error: 'Deu ruim' })),
+      await bookService.findById('60929c547f9f710db4ff3d5f'),
       fold(
         error => console.log(error),
         result => console.log(result),
