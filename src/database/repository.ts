@@ -8,7 +8,7 @@ export type Id = {
 
 export interface Repository<E> {
   create: (entity: E) => Promise<Option<Id>>;
-  updateById: (id: string, entity: E) => Promise<E>;
+  updateById: (id: string, entity: E) => Promise<Option<E>>;
   deleteById: (id: string) => Promise<boolean>;
   findById: (id: string) => Promise<E>;
   getCollection: () => Collection<E>;
@@ -44,15 +44,15 @@ const updateById = (
   client: MongoClient,
   database: string,
   entityName: string,
-) => async <E>(id: string, entity: E): Promise<E> => {
+) => async <E>(id: string, entity: E): Promise<Option<E>> => {
   const collection = getCollection(client, database, entityName);
 
   const result = await collection.findOneAndUpdate(
-    { _id: id },
+    { _id: ObjectId.createFromHexString(id) },
     { $set: entity },
     { returnOriginal: false },
   );
-  return resolveId(result.value as E);
+  return result.value ? some(resolveId(result.value as E)) : none;
 };
 
 const deleteById = (
