@@ -126,3 +126,5 @@ export const getRepository = <E>(
   findById: findById(client, database, entityName),
   getCollection: () => getCollection(client, database, entityName),
 });
+
+export const validateObjectId = (id: string): boolean => ObjectId.isValid(id);
