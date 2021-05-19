@@ -1,4 +1,5 @@
-import { getOrElse } from 'fp-ts/TaskEither';
+import { pipe } from 'fp-ts/function';
+
 import './config/alias';
 import { connect, disconnect } from './database';
 import { bookService } from './modules/book/service';
@@ -11,10 +12,17 @@ const run = async () => {
 
     const controller = getController(bookService, book);
 
-    const createTaskEither = controller.create({ title: 'Diary', pages: 200 });
-    const result = getOrElse(error => error as any)(createTaskEither);
+    const resultTask = pipe(
+      controller.create({
+        title: 'Diary',
+        pages: 200,
+        some: 'think',
+      }),
+    );
 
-    console.log(await result());
+    await resultTask()
+      .then(res => console.log(res))
+      .catch(err => console.log(err));
   } finally {
     await disconnect();
   }

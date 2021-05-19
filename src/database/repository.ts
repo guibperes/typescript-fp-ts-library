@@ -1,7 +1,7 @@
 import { MongoClient, ObjectId, Collection } from 'mongodb';
 import { pipe } from 'fp-ts/function';
 import { Option, none, some } from 'fp-ts/Option';
-import { TaskEither, tryCatch, map } from 'fp-ts/TaskEither';
+import { TaskEither, tryCatch, chain, right, left } from 'fp-ts/TaskEither';
 
 import { ServiceError } from '@/base';
 
@@ -42,7 +42,11 @@ const create = (client: MongoClient, database: string, entityName: string) => <
       () => collection.insertOne(entity),
       (): ServiceError => ({ error: 'Cannot insert entity on database' }),
     ),
-    map(result => ({ id: result.insertedId.toHexString() } as Id)),
+    chain(result =>
+      result.insertedId
+        ? right({ id: result.insertedId.toHexString() })
+        : left({ error: 'Cannot insert entity on database' }),
+    ),
   );
 };
 
