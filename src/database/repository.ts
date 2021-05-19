@@ -1,6 +1,5 @@
 import { MongoClient, ObjectId, Collection } from 'mongodb';
 import { pipe } from 'fp-ts/function';
-import { Option, none, some } from 'fp-ts/Option';
 import { TaskEither, tryCatch, chain, right, left } from 'fp-ts/TaskEither';
 
 import { ServiceError } from '@/base';
@@ -100,13 +99,20 @@ const findById = (
   client: MongoClient,
   database: string,
   entityName: string,
-) => async <E>(id: string): TaskEither<ServiceError, E> => {
+) => <E>(id: string): TaskEither<ServiceError, E> => {
   const collection = getCollection(client, database, entityName);
 
-  const result = await collection.findOne({
-    _id: ObjectId.createFromHexString(id),
-  });
-  return result ? some(resolveId(result as E)) : none;
+  return pipe(
+    tryCatch(
+      () => collection.findOne({ _id: ObjectId.createFromHexString(id) }),
+      (): ServiceError => ({ error: 'Cannot find entity with provided id' }),
+    ),
+    chain(result =>
+      result
+        ? right(resolveId(result as E))
+        : left({ error: 'Cannot find entity with provided id' }),
+    ),
+  );
 };
 
 export const getRepository = <E>(
