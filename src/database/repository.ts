@@ -11,9 +11,9 @@ export type Id = {
 
 export interface Repository<E> {
   create: (entity: E) => TaskEither<ServiceError, Id>;
-  updateById: (id: string, entity: E) => Promise<Option<E>>;
-  deleteById: (id: string) => Promise<Option<boolean>>;
-  findById: (id: string) => Promise<Option<E>>;
+  updateById: (id: string, entity: E) => TaskEither<ServiceError, E>;
+  deleteById: (id: string) => TaskEither<ServiceError, boolean>;
+  findById: (id: string) => TaskEither<ServiceError, E>;
   getCollection: () => Collection<E>;
 }
 
@@ -54,22 +54,32 @@ const updateById = (
   client: MongoClient,
   database: string,
   entityName: string,
-) => async <E>(id: string, entity: E): Promise<Option<E>> => {
+) => <E>(id: string, entity: E): TaskEither<ServiceError, E> => {
   const collection = getCollection(client, database, entityName);
 
-  const result = await collection.findOneAndUpdate(
-    { _id: ObjectId.createFromHexString(id) },
-    { $set: entity },
-    { returnOriginal: false },
+  return pipe(
+    tryCatch(
+      () =>
+        collection.findOneAndUpdate(
+          { _id: ObjectId.createFromHexString(id) },
+          { $set: entity },
+          { returnOriginal: false },
+        ),
+      (): ServiceError => ({ error: 'Cannot update entity with provided id' }),
+    ),
+    chain(result =>
+      result.value
+        ? right(resolveId(result.value as E))
+        : left({ error: 'Cannot update entity with provided id' }),
+    ),
   );
-  return result.value ? some(resolveId(result.value as E)) : none;
 };
 
 const deleteById = (
   client: MongoClient,
   database: string,
   entityName: string,
-) => async (id: string): Promise<Option<boolean>> => {
+) => async (id: string): TaskEither<ServiceError, boolean> => {
   const collection = getCollection(client, database, entityName);
 
   const result = await collection.findOneAndDelete({
@@ -82,7 +92,7 @@ const findById = (
   client: MongoClient,
   database: string,
   entityName: string,
-) => async <E>(id: string): Promise<Option<E>> => {
+) => async <E>(id: string): TaskEither<ServiceError, E> => {
   const collection = getCollection(client, database, entityName);
 
   const result = await collection.findOne({
