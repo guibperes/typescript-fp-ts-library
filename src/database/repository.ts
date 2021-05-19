@@ -1,13 +1,16 @@
 import { MongoClient, ObjectId, Collection } from 'mongodb';
 import { pipe } from 'fp-ts/function';
 import { Option, none, some } from 'fp-ts/Option';
+import { TaskEither, tryCatch, map } from 'fp-ts/TaskEither';
+
+import { ServiceError } from '@/base';
 
 export type Id = {
   id: string;
 };
 
 export interface Repository<E> {
-  create: (entity: E) => Promise<Option<Id>>;
+  create: (entity: E) => TaskEither<ServiceError, Id>;
   updateById: (id: string, entity: E) => Promise<Option<E>>;
   deleteById: (id: string) => Promise<Option<boolean>>;
   findById: (id: string) => Promise<Option<E>>;
@@ -27,17 +30,20 @@ const objectEntriesMap = (array: [string, any][]) =>
 const resolveId = <E>(entity: E): E =>
   pipe(entity, Object.entries, objectEntriesMap, Object.fromEntries);
 
-const create = (
-  client: MongoClient,
-  database: string,
-  entityName: string,
-) => async <E>(entity: E): Promise<Option<Id>> => {
+const create = (client: MongoClient, database: string, entityName: string) => <
+  E
+>(
+  entity: E,
+): TaskEither<ServiceError, Id> => {
   const collection = getCollection(client, database, entityName);
 
-  const result = await collection.insertOne(entity);
-  return result.insertedId
-    ? some({ id: result.insertedId.toHexString() })
-    : none;
+  return pipe(
+    tryCatch(
+      () => collection.insertOne(entity),
+      (): ServiceError => ({ error: 'Cannot insert entity on database' }),
+    ),
+    map(result => ({ id: result.insertedId.toHexString() } as Id)),
+  );
 };
 
 const updateById = (

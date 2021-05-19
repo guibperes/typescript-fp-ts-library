@@ -1,25 +1,20 @@
 import { pipe } from 'fp-ts/function';
 import { Either, fromOption } from 'fp-ts/Either';
-import { Id, Repository } from '@/database';
+import { TaskEither } from 'fp-ts/TaskEither';
 
-export type ServiceError = {
-  error: string;
-};
+import { Id, Repository } from '@/database';
+import { ServiceError } from './error';
 
 export interface Service<E> {
-  create: (entity: E) => Promise<Either<ServiceError, Id>>;
+  create: (entity: E) => TaskEither<ServiceError, Id>;
   updateById: (id: string, entity: E) => Promise<Either<ServiceError, E>>;
   deleteById: (id: string) => Promise<Either<ServiceError, boolean>>;
   findById: (id: string) => Promise<Either<ServiceError, E>>;
 }
 
-const create = <E>(repository: Repository<E>) => async (
+const create = <E>(repository: Repository<E>) => (
   entity: E,
-): Promise<Either<ServiceError, Id>> =>
-  pipe(
-    await repository.create(entity),
-    fromOption(() => ({ error: 'Cannot insert entity on database' })),
-  );
+): TaskEither<ServiceError, Id> => repository.create(entity);
 
 const updateById = <E>(repository: Repository<E>) => async (
   id: string,

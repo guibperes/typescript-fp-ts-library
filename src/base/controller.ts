@@ -1,13 +1,14 @@
 import { pipe } from 'fp-ts/function';
-import { Either } from 'fp-ts/Either';
+import { TaskEither } from 'fp-ts/TaskEither';
+
 import { Id } from '@/database';
-import { ServiceError } from './service';
+import { ServiceError } from './error';
 
 export interface Controller<E> {
-  create: (body: object) => Promise<Either<ServiceError, Id>>;
-  updateById: (id: string, body: object) => Promise<Either<ServiceError, E>>;
-  deleteById: (id: string) => Promise<Either<ServiceError, boolean>>;
-  findById: (id: string) => Promise<Either<ServiceError, E>>;
+  create: (body: object) => TaskEither<ServiceError, Id>;
+  updateById: (id: string, body: object) => TaskEither<ServiceError, E>;
+  deleteById: (id: string) => TaskEither<ServiceError, boolean>;
+  findById: (id: string) => TaskEither<ServiceError, E>;
 }
 
 const filterBodyMap = (body: object) => (array: [string, any][]) =>
