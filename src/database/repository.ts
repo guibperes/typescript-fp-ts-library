@@ -79,13 +79,21 @@ const deleteById = (
   client: MongoClient,
   database: string,
   entityName: string,
-) => async (id: string): TaskEither<ServiceError, boolean> => {
+) => (id: string): TaskEither<ServiceError, boolean> => {
   const collection = getCollection(client, database, entityName);
 
-  const result = await collection.findOneAndDelete({
-    _id: ObjectId.createFromHexString(id),
-  });
-  return result.value ? some(Boolean(result.value)) : none;
+  return pipe(
+    tryCatch(
+      () =>
+        collection.findOneAndDelete({ _id: ObjectId.createFromHexString(id) }),
+      (): ServiceError => ({ error: 'Cannot delete entity with provided id' }),
+    ),
+    chain(result =>
+      result.value
+        ? right(Boolean(result.value))
+        : left({ error: 'Cannot delete entity with provided id' }),
+    ),
+  );
 };
 
 const findById = (
