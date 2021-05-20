@@ -1,12 +1,5 @@
 import { pipe } from 'fp-ts/function';
-import {
-  TaskEither,
-  fromEither,
-  mapLeft,
-  chain,
-  right,
-  left,
-} from 'fp-ts/TaskEither';
+import { TaskEither, fromEither, mapLeft, chain } from 'fp-ts/TaskEither';
 
 import { Controller, Service, ServiceError, filterBody } from '@/base';
 import { Id, validateObjectId } from '@/database';
@@ -34,12 +27,8 @@ const updateById = (service: Service<Book>, bookType: typeof book) => (
     bookType.decode,
     fromEither,
     mapLeft((errors): ServiceError => ({ error: errors.toString() })),
-    chain(bookData =>
-      validateObjectId(id)
-        ? right(bookData)
-        : left({ error: 'Invalid Id parameter' }),
-    ),
-    chain(bookData => service.updateById(id, bookData)),
+    chain(bookData => validateObjectId(id, bookData)),
+    chain(validated => service.updateById(validated.id, validated.body)),
   );
 
 const deleteById = (service: Service<Book>) => (
@@ -48,22 +37,14 @@ const deleteById = (service: Service<Book>) => (
   pipe(
     id,
     validateObjectId,
-    isValidId =>
-      isValidId
-        ? right(id)
-        : left({ error: 'Invalid Id parameter' } as ServiceError),
-    chain(idData => service.deleteById(idData)),
+    chain(validated => service.deleteById(validated.id)),
   );
 
 const findById = (service: Service<Book>) => (id: string) =>
   pipe(
     id,
     validateObjectId,
-    isValidId =>
-      isValidId
-        ? right(id)
-        : left({ error: 'Invalid Id parameter' } as ServiceError),
-    chain(idData => service.findById(idData)),
+    chain(validated => service.findById(validated.id)),
   );
 
 export const getController = (

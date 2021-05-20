@@ -127,4 +127,15 @@ export const getRepository = <E>(
   getCollection: () => getCollection(client, database, entityName),
 });
 
-export const validateObjectId = (id: string): boolean => ObjectId.isValid(id);
+export type IdValidation<E> = {
+  id: string;
+  body: E;
+};
+
+export const validateObjectId = <E>(
+  id: string,
+  body: E = {} as E,
+): TaskEither<ServiceError, IdValidation<E>> =>
+  pipe(id, ObjectId.isValid, isValidId =>
+    isValidId ? right({ id, body }) : left({ error: 'Invalid Id parameter' }),
+  );
