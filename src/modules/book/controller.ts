@@ -42,10 +42,36 @@ const updateById = (service: Service<Book>, bookType: typeof book) => (
     chain(bookData => service.updateById(id, bookData)),
   );
 
+const deleteById = (service: Service<Book>) => (
+  id: string,
+): TaskEither<ServiceError, boolean> =>
+  pipe(
+    id,
+    validateObjectId,
+    isValidId =>
+      isValidId
+        ? right(id)
+        : left({ error: 'Invalid Id parameter' } as ServiceError),
+    chain(idData => service.deleteById(idData)),
+  );
+
+const findById = (service: Service<Book>) => (id: string) =>
+  pipe(
+    id,
+    validateObjectId,
+    isValidId =>
+      isValidId
+        ? right(id)
+        : left({ error: 'Invalid Id parameter' } as ServiceError),
+    chain(idData => service.findById(idData)),
+  );
+
 export const getController = (
   service: Service<Book>,
   bookType: typeof book,
 ): Controller<Book> => ({
   create: create(service, bookType),
   updateById: updateById(service, bookType),
+  deleteById: deleteById(service),
+  findById: findById(service),
 });
