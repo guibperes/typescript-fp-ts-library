@@ -3,18 +3,20 @@ import { fold } from 'fp-ts/Either';
 
 import './config/alias';
 import { connect, disconnect } from './database';
-import { bookService } from './modules/book/service';
-import { getController } from './modules/book/controller';
-import { book } from './modules/book/entity';
+import { bookController } from './modules/book/controller';
 
 const run = async () => {
   try {
     await connect();
 
-    const controller = getController(bookService, book);
-
     pipe(
-      await controller.create({ title: 'Diary', pages: 200 })(),
+      // await bookController.create({ title: 'Diary', pages: 200 })(),
+      // await bookController.updateById('60929c69cedc8f5e9f4b64aa', {
+      //   title: 'Diary',
+      //   pages: 50,
+      // })(),
+      // await bookController.deleteById('60929c69cedc8f5e9f4b64aa')(),
+      await bookController.findById('60a7fec0353caf9d7f0d9a93')(),
       fold(
         error => console.log(error),
         result => console.log(result),
