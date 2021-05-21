@@ -1,4 +1,5 @@
 import { pipe } from 'fp-ts/function';
+import { fold } from 'fp-ts/Either';
 
 import './config/alias';
 import { connect, disconnect } from './database';
@@ -12,17 +13,13 @@ const run = async () => {
 
     const controller = getController(bookService, book);
 
-    const resultTask = pipe(
-      controller.create({
-        title: 'Diary',
-        pages: 200,
-        some: 'think',
-      }),
+    pipe(
+      await controller.create({ title: 'Diary', pages: 200 })(),
+      fold(
+        error => console.log(error),
+        result => console.log(result),
+      ),
     );
-
-    await resultTask()
-      .then(res => console.log(res))
-      .catch(err => console.log(err));
   } finally {
     await disconnect();
   }
