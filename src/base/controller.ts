@@ -34,10 +34,10 @@ const create = <E, T>(service: Service<E>, bookType: TypeC<T & Props>) => (
     chain(bookData => service.create(bookData as E)),
   );
 
-const updateById = <E, T extends Props>(
-  service: Service<E>,
-  bookType: TypeC<T>,
-) => (id: string, body: object): TaskEither<ServiceError, E> =>
+const updateById = <E, T>(service: Service<E>, bookType: TypeC<T & Props>) => (
+  id: string,
+  body: object,
+): TaskEither<ServiceError, E> =>
   pipe(
     body,
     filterBody(bookType.props),
@@ -64,9 +64,9 @@ const findById = <E>(service: Service<E>) => (id: string) =>
     chain(validated => service.findById(validated.id)),
   );
 
-export const getController = <E, T extends Props>(
+export const getController = <E, T>(
   service: Service<E>,
-  bookType: TypeC<T>,
+  bookType: TypeC<T & Props>,
 ): Controller<E> => ({
   create: create(service, bookType),
   updateById: updateById(service, bookType),
