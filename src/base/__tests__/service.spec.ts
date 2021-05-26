@@ -3,11 +3,13 @@ import { getOrElse } from 'fp-ts/Either';
 import {
   getRepositoryMock,
   getRepositoryErrorMock,
+  getObjectIdFromDate,
 } from '@/database/__mocks__';
 import { Id } from '@/database';
 import { getService } from '../service';
 
 type BookTest = {
+  id?: string;
   title: string;
   pages: number;
 };
@@ -33,5 +35,22 @@ describe('Service tests', () => {
     expect(result.id).toBeDefined();
     expect(typeof result.id).toBe('string');
     expect(result.id.length).toBeGreaterThan(0);
+  });
+
+  it('should send id and entity to repository and return updated entity', async () => {
+    const id = getObjectIdFromDate();
+    const resultEither = await service.updateById(id, {
+      title: 'Some book',
+      pages: 100,
+    })();
+
+    const result = getOrElse(error => error)(resultEither) as BookTest;
+
+    expect(resultEither).toBeDefined();
+    expect(resultEither['_tag']).toBe('Right');
+    expect(result).toBeDefined();
+    expect(typeof result.id).toBe('string');
+    expect(result.title).toBe('Some book');
+    expect(result.pages).toBe(100);
   });
 });
