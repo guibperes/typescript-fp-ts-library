@@ -53,4 +53,16 @@ describe('Service tests', () => {
     expect(result.title).toBe('Some book');
     expect(result.pages).toBe(100);
   });
+
+  it('should send id to repository and delete from database and return true', async () => {
+    const id = getObjectIdFromDate();
+    const resultEither = await service.deleteById(id)();
+    const result = getOrElse(error => error)(resultEither) as boolean;
+
+    expect(resultEither).toBeDefined();
+    expect(resultEither['_tag']).toBe('Right');
+    expect(result).toBeDefined();
+    expect(typeof result).toBe('boolean');
+    expect(result).toBeTruthy();
+  });
 });
