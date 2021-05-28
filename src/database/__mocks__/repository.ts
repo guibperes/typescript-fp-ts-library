@@ -17,7 +17,7 @@ export const getRepositoryMock = <E>(): Repository<E> => ({
 
   deleteById: (id: string): TaskEither<ServiceError, boolean> => right(true),
 
-  findById: (id: string): TaskEither<ServiceError, E> => right({} as E),
+  findById: (id: string): TaskEither<ServiceError, E> => right({ id } as any),
 
   getCollection: () => ({} as Collection),
 });

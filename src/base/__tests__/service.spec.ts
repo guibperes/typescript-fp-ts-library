@@ -65,4 +65,16 @@ describe('Service tests', () => {
     expect(typeof result).toBe('boolean');
     expect(result).toBeTruthy();
   });
+
+  it('should send id to repositoty and return from database a valid entity', async () => {
+    const id = getObjectIdFromDate();
+    const resultEither = await service.findById(id)();
+    const result = getOrElse(error => error)(resultEither) as BookTest;
+
+    expect(resultEither).toBeDefined();
+    expect(resultEither['_tag']).toBe('Right');
+    expect(result).toBeDefined();
+    expect(typeof result.id).toBe('string');
+    expect(result.id).toStrictEqual(id);
+  });
 });
