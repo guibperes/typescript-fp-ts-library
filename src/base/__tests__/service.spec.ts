@@ -7,6 +7,7 @@ import {
 } from '@/database/__mocks__';
 import { Id } from '@/database';
 import { getService } from '../service';
+import { ServiceError } from '../error';
 
 type BookTest = {
   id?: string;
@@ -76,5 +77,60 @@ describe('Service tests', () => {
     expect(result).toBeDefined();
     expect(typeof result.id).toBe('string');
     expect(result.id).toStrictEqual(id);
+  });
+
+  it('should send entity to repository and return service error', async () => {
+    const resultEither = await errorService.create({
+      title: 'Some book',
+      pages: 100,
+    })();
+
+    const result = getOrElse(error => error)(resultEither) as ServiceError;
+
+    expect(resultEither).toBeDefined();
+    expect(resultEither['_tag']).toBe('Left');
+    expect(result).toBeDefined();
+    expect(result.error).toBeDefined();
+    expect(typeof result.error).toBe('string');
+  });
+
+  it('should send id and entity to repository and return service error', async () => {
+    const id = getObjectIdFromDate();
+    const resultEither = await errorService.updateById(id, {
+      title: 'Some book',
+      pages: 100,
+    })();
+
+    const result = getOrElse(error => error)(resultEither) as ServiceError;
+
+    expect(resultEither).toBeDefined();
+    expect(resultEither['_tag']).toBe('Left');
+    expect(result).toBeDefined();
+    expect(result.error).toBeDefined();
+    expect(typeof result.error).toBe('string');
+  });
+
+  it('should send id to repository and return service error', async () => {
+    const id = getObjectIdFromDate();
+    const resultEither = await errorService.deleteById(id)();
+    const result = getOrElse(error => error)(resultEither) as ServiceError;
+
+    expect(resultEither).toBeDefined();
+    expect(resultEither['_tag']).toBe('Left');
+    expect(result).toBeDefined();
+    expect(result.error).toBeDefined();
+    expect(typeof result.error).toBe('string');
+  });
+
+  it('should send id to repository and return service error', async () => {
+    const id = getObjectIdFromDate();
+    const resultEither = await errorService.findById(id)();
+    const result = getOrElse(error => error)(resultEither) as ServiceError;
+
+    expect(resultEither).toBeDefined();
+    expect(resultEither['_tag']).toBe('Left');
+    expect(result).toBeDefined();
+    expect(result.error).toBeDefined();
+    expect(typeof result.error).toBe('string');
   });
 });
